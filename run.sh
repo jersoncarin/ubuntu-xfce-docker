@@ -2,10 +2,11 @@
 
 # Default values
 DEFAULT_PORT=3390
+DETACH=false
 
 # Function to print usage
 usage() {
-    echo "Usage: $0 <image_name> [--port <port>] [--username <username>] [--password <password>] [--sp <sudo_cap>] [--cft <cloudflared_token>]"
+    echo "Usage: $0 <image_name> [--port <port>] [--username <username>] [--password <password>] [--sp <sudo_cap>] [--cft <cloudflared_token>] [--detach|-d]"
     exit 1
 }
 
@@ -34,6 +35,7 @@ while [[ $# -gt 0 ]]; do
         --password) PASSWORD="$2"; shift 2 ;;
         --sp) SUDO_CAP="$2"; shift 2 ;;
         --cft) CLOUD_FLARED="$2"; shift 2 ;;
+        --detach|-d) DETACH=true; shift ;;
         *) echo "Unknown option $1"; usage ;;
     esac
 done
@@ -49,13 +51,18 @@ fi
 
 echo "Running on rdp://localhost:$PORT"
 
+# Determine run mode
+if [[ "$DETACH" == true ]]; then
+    RUN_FLAGS="-d"
+else
+    RUN_FLAGS="-it"
+fi
 
 # Run docker container with sudo
-sudo docker run -it \
+sudo docker run $RUN_FLAGS \
 -v "$HOME/$IMAGE:/home" \
 --runtime=nvidia \
 --gpus all \
 -p "$PORT":3389 \
 "$IMAGE" \
 "${USERNAME:-}" "${PASSWORD:-}" "${SUDO_CAP:-}" "${CLOUD_FLARED:-}"
-
