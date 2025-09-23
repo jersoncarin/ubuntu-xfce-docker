@@ -64,6 +64,8 @@ fi
 
 # Run docker container with sudo
 sudo docker run $RUN_FLAGS \
+--cap-add=SYS_ADMIN \
+--security-opt seccomp=unconfined \
 -v "$HOME/$IMAGE:/home" \
 --runtime=nvidia \
 --gpus all \
