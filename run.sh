@@ -3,10 +3,12 @@
 # Default values
 DEFAULT_PORT=3390
 DETACH=false
+RESTART_POLICY="unless-stopped"
 
 # Function to print usage
 usage() {
-    echo "Usage: $0 <image_name> [--port <port>] [--username <username>] [--password <password>] [--sp <sudo_cap>] [--cft <cloudflared_token>] [--detach|-d]"
+    echo "Usage: $0 <image_name> [--port <port>] [--username <username>] [--password <password>] [--sp <sudo_cap>] [--cft <cloudflared_token>] [--detach|-d] [--restart <policy>]"
+    echo "Restart policy options: no, always, unless-stopped, on-failure[:max-retries]"
     exit 1
 }
 
@@ -36,6 +38,7 @@ while [[ $# -gt 0 ]]; do
         --sp) SUDO_CAP="$2"; shift 2 ;;
         --cft) CLOUD_FLARED="$2"; shift 2 ;;
         --detach|-d) DETACH=true; shift ;;
+        --restart) RESTART_POLICY="$2"; shift 2 ;;
         *) echo "Unknown option $1"; usage ;;
     esac
 done
@@ -50,6 +53,7 @@ if [[ -z "$PORT" ]]; then
 fi
 
 echo "Running on rdp://localhost:$PORT"
+echo "Restart policy: $RESTART_POLICY"
 
 # Determine run mode
 if [[ "$DETACH" == true ]]; then
@@ -64,5 +68,6 @@ sudo docker run $RUN_FLAGS \
 --runtime=nvidia \
 --gpus all \
 -p "$PORT":3389 \
+--restart $RESTART_POLICY \
 "$IMAGE" \
 "${USERNAME:-}" "${PASSWORD:-}" "${SUDO_CAP:-}" "${CLOUD_FLARED:-}"

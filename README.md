@@ -54,23 +54,41 @@ sudo docker build -t mydockerimg .
 Use the provided `run.sh` script to start the container:
 
 ```bash
-./run.sh <image_name> --username <username> --password <password> --sp <yes/no> --cft <cloudflared_token>
+./run.sh <image_name> [--port <port>] [--username <username>] [--password <password>] [--sp <yes/no>] [--cft <cloudflared_token>] [--detach|-d] [--restart <policy>]
 ```
 
 **Parameters:**
 
-| Parameter      | Description                                                    |
-| -------------- | -------------------------------------------------------------- |
-| `<image_name>` | Name of your Docker image (positional argument)                |
-| `--username`   | Username to create inside the container                        |
-| `--password`   | Password for the user                                          |
-| `--sp`         | Grant sudo privileges (`yes` or `no`)                          |
-| `--cft`        | Cloudflared token for service registration (cloudflare tunnel) |
+| Parameter         | Description                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `<image_name>`    | Name of your Docker image (positional argument)                                                                                    |
+| `--username`      | Username to create inside the container                                                                                            |
+| `--password`      | Password for the user                                                                                                              |
+| `--sp`            | Grant sudo privileges (`yes` or `no`)                                                                                              |
+| `--cft`           | Cloudflared token for service registration (cloudflare tunnel)                                                                     |
+| `--detach` / `-d` | Run container in background (detached mode)                                                                                        |
+| `--restart`       | Restart policy for the container. Default: `unless-stopped`. Options: `no`, `always`, `unless-stopped`, `on-failure[:max-retries]` |
 
-**Example:**
+**Examples:**
+
+**Interactive mode (default):**
 
 ```bash
 ./run.sh mydockerimg --username testuser --password testpass --sp yes --cft mytoken
+```
+
+**Detached mode (background) with default restart policy:**
+
+```bash
+./run.sh mydockerimg --username testuser --password testpass --sp yes --cft mytoken --detach
+# or short version
+./run.sh mydockerimg --username testuser --password testpass --sp yes --cft mytoken -d
+```
+
+**Detached mode with custom restart policy:**
+
+```bash
+./run.sh mydockerimg --username testuser --password testpass --sp yes --cft mytoken --detach --restart always
 ```
 
 > The script automatically chooses port `3390` for RDP and increments if the port is busy.  
@@ -121,6 +139,8 @@ cloudflared access rdp --hostname rdpserv.jersnetdev.com --url rdp://localhost:3
 - Starts xRDP services for remote desktop access.
 - Auto-detects free RDP port starting from 3390.
 - Allows secure remote access via Cloudflared tunnel.
+- Supports running in detached mode (`--detach` / `-d`).
+- Supports automatic restart policies (`--restart`).
 
 ---
 
@@ -174,4 +194,4 @@ cloudflared access rdp --hostname rdpserv.jersnetdev.com --url rdp://localhost:3
 
 ## Credits
 
-Thanks to [danchitnis](https://github.com/danchitnis/container-xrdp/) for the Dockerfile and config
+Thanks to [danchitnis](https://github.com/danchitnis/container-xrdp/) for the Dockerfile and config.
