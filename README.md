@@ -122,7 +122,7 @@ To access the container's RDP remotely, you can use **Cloudflared** on your clie
 2. **Connect to the RDP server:**
 
 ```bash
-cloudflared access rdp --hostname rdpserv.jersnetdev.com --url rdp://localhost:3390
+cloudflared access rdp --hostname rdp.jersnetdev.com/<user> --url rdp://localhost:3390
 ```
 
 > Take note: if the container auto-increments the port (because 3390 is in use), replace `3390` with the correct port printed by the `run.sh` script.
