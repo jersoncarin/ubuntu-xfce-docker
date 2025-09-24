@@ -1,21 +1,8 @@
 #!/bin/bash
 
-install_firefox() {
-    if command -v firefox &> /dev/null; then
-        echo "Firefox is already installed. Skipping..."
-        return
-    fi
-    
-    echo "Installing Firefox..."
-    mkdir -p /etc/apt/keyrings
-    wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
-    
-    echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list
-    echo -e "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000" > /etc/apt/preferences.d/mozilla
-    
-    apt-get update && apt-get install -y firefox
-    echo "Firefox installed."
-}
+ln -sf /usr/share/zoneinfo/Asia/Manila /etc/localtime
+echo "Asia/Manila" > /etc/timezone
+dpkg-reconfigure -f noninteractive tzdata
 
 start_xrdp_services() {
     # Preventing xrdp startup failure
@@ -56,30 +43,15 @@ create_user_and_cloudflared() {
     fi
     echo "User '$username' created. Sudo: $sudo_flag"
     
-    # Install cloudflared if not installed
-    if command -v cloudflared &> /dev/null; then
-        echo "Cloudflared is already installed. Skipping..."
-    else
-        echo "Installing Cloudflared..."
-        sudo mkdir -p --mode=0755 /usr/share/keyrings
-        curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
-        echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
-        
-        sudo apt-get update && sudo apt-get install -y cloudflared
-        echo "Cloudflared installed."
-        
-        # Register token and install service
-        sudo cloudflared service install "$cloudflared_token"
-        echo "Cloudflared service installed with provided token."
-    fi
+    # Register token and install service
+    sudo cloudflared service install "$cloudflared_token"
+    echo "Cloudflared service installed with provided token."
 }
 
 
 echo Entrypoint script is Running...
 echo
 
-
-install_firefox
 create_user_and_cloudflared "$@"
 
 echo -e "This script is ended\n"
